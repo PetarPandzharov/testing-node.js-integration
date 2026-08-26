@@ -5,6 +5,7 @@ const mysql = require('mysql2/promise');
 
 const app = express();
 const port = Number(process.env.PORT || 3000);
+const names = ['Petar', 'Maria', 'Ivan'];
 
 const pool = mysql.createPool({
   host: process.env.DB_HOST || '127.0.0.1',
@@ -28,6 +29,10 @@ app.get('/', (req, res) => {
 
 app.get('/health', (req, res) => {
   res.json({ status: 'ok' });
+});
+
+app.get('/names', (req, res) => {
+  res.json(names);
 });
 
 app.get('/db-health', async (req, res) => {
