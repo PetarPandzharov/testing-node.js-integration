@@ -5,6 +5,7 @@
   "description": "A small Express and MySQL application for integration testing.",
   "main": "server.js",
   "scripts": {
+    "build": "node --check server.js",
     "start": "node server.js",
     "dev": "node --watch server.js"
   },
