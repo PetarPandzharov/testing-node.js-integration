@@ -1,6 +1,6 @@
 # Testing Node.js Integration
 
-Simple Express application with a MySQL connectivity endpoint.
+Simple Express and MySQL application for testing the Node.js integration with SiteGround.
 
 ## Setup
 
