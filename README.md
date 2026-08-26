@@ -40,3 +40,5 @@ CREATE TABLE persons (
 ```
 
 For hosting, set the same `DB_NAME`, `DB_USER`, and `DB_PASSWORD` values in the application's environment settings. Set `DB_HOST` to the MySQL hostname supplied by the hosting provider if it is not `127.0.0.1`.
+
+The `.env` file is excluded from Git so database passwords are not published. Because the application is connected directly to this repository, configure these variables in the hosting platform's Node.js application environment settings. The platform injects them when it starts the application; the repository does not need to contain `.env`.
