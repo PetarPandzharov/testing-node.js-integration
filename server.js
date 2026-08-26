@@ -1,18 +1,22 @@
-require('dotenv').config();
-
 const path = require('path');
+require('dotenv').config({ path: path.join(__dirname, '.env') });
 const express = require('express');
 const mysql = require('mysql2/promise');
 
 const app = express();
 const port = Number(process.env.PORT || 3000);
+const databaseConfig = {
+  host: process.env.DB_HOST,
+  port: Number(process.env.DB_PORT || 3306),
+  user: process.env.DB_USER,
+  password: process.env.DB_PASSWORD,
+  database: process.env.DB_NAME
+};
+const missingDatabaseConfig = ['DB_HOST', 'DB_USER', 'DB_PASSWORD', 'DB_NAME']
+  .filter((key) => !process.env[key]);
 
 const pool = mysql.createPool({
-  host: process.env.DB_HOST || '127.0.0.1',
-  port: Number(process.env.DB_PORT || 3306),
-  user: process.env.DB_USER || 'root',
-  password: process.env.DB_PASSWORD || '',
-  database: process.env.DB_NAME || 'testing_nodejs',
+  ...databaseConfig,
   waitForConnections: true,
   connectionLimit: 5,
   queueLimit: 0
@@ -30,6 +34,10 @@ app.get('/health', (req, res) => {
 });
 
 app.get('/names', async (req, res) => {
+  if (missingDatabaseConfig.length) {
+    return res.status(503).json({ error: 'Database configuration is missing', missing: missingDatabaseConfig });
+  }
+
   try {
     const [rows] = await pool.query(
       'SELECT id, name, created_at AS createdAt FROM persons ORDER BY id DESC'
@@ -47,6 +55,10 @@ app.post('/names', async (req, res) => {
     return res.status(400).json({ error: 'A non-empty name is required' });
   }
 
+  if (missingDatabaseConfig.length) {
+    return res.status(503).json({ error: 'Database configuration is missing', missing: missingDatabaseConfig });
+  }
+
   try {
     const [result] = await pool.execute('INSERT INTO persons (name) VALUES (?)', [name]);
     res.status(201).json({ id: result.insertId, name });
@@ -56,6 +68,10 @@ app.post('/names', async (req, res) => {
 });
 
 app.get('/db-health', async (req, res) => {
+  if (missingDatabaseConfig.length) {
+    return res.status(503).json({ status: 'error', database: false, missing: missingDatabaseConfig });
+  }
+
   try {
     const [rows] = await pool.query('SELECT 1 AS connected');
     res.json({ status: 'ok', database: rows[0].connected === 1 });
