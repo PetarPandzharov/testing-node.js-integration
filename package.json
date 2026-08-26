@@ -1,0 +1,19 @@
+{
+  "name": "testing-nodejs-integration",
+  "version": "1.0.0",
+  "private": true,
+  "description": "A small Express and MySQL application for integration testing.",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "dev": "node --watch server.js"
+  },
+  "engines": {
+    "node": ">=18"
+  },
+  "dependencies": {
+    "dotenv": "^16.4.7",
+    "express": "^5.1.0",
+    "mysql2": "^3.14.1"
+  }
+}
