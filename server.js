@@ -1,11 +1,11 @@
 require('dotenv').config();
 
+const path = require('path');
 const express = require('express');
 const mysql = require('mysql2/promise');
 
 const app = express();
 const port = Number(process.env.PORT || 3000);
-const names = ['Petar', 'Maria', 'Ivan'];
 
 const pool = mysql.createPool({
   host: process.env.DB_HOST || '127.0.0.1',
@@ -19,31 +19,40 @@ const pool = mysql.createPool({
 });
 
 app.use(express.json());
+app.use(express.static(path.join(__dirname, 'public')));
 
 app.get('/', (req, res) => {
-  res.json({
-    name: 'testing-nodejs-integration',
-    message: 'Express and MySQL test application'
-  });
+  res.sendFile(path.join(__dirname, 'public', 'index.html'));
 });
 
 app.get('/health', (req, res) => {
   res.json({ status: 'ok' });
 });
 
-app.get('/names', (req, res) => {
-  res.json(names);
+app.get('/names', async (req, res) => {
+  try {
+    const [rows] = await pool.query(
+      'SELECT id, name, created_at AS createdAt FROM persons ORDER BY id DESC'
+    );
+    res.json(rows);
+  } catch (error) {
+    res.status(503).json({ error: 'Unable to load names', message: error.message });
+  }
 });
 
-app.post('/names', (req, res) => {
+app.post('/names', async (req, res) => {
   const name = typeof req.body.name === 'string' ? req.body.name.trim() : '';
 
   if (!name) {
     return res.status(400).json({ error: 'A non-empty name is required' });
   }
 
-  names.push(name);
-  res.status(201).json({ name });
+  try {
+    const [result] = await pool.execute('INSERT INTO persons (name) VALUES (?)', [name]);
+    res.status(201).json({ id: result.insertId, name });
+  } catch (error) {
+    res.status(503).json({ error: 'Unable to save name', message: error.message });
+  }
 });
 
 app.get('/db-health', async (req, res) => {

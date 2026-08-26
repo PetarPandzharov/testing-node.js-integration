@@ -1,0 +1,72 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>People list</title>
+  <style>
+    :root { color-scheme: light; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; }
+    body { margin: 0; background: #f3f6f8; color: #17212b; }
+    main { width: min(92%, 620px); margin: 8vh auto; }
+    section { background: #fff; border: 1px solid #dbe3e8; border-radius: 10px; padding: 2rem; box-shadow: 0 8px 24px #17212b12; }
+    h1 { margin-top: 0; }
+    form { display: flex; gap: .75rem; margin-bottom: 1.5rem; }
+    input { flex: 1; min-width: 0; border: 1px solid #aebbc4; border-radius: 6px; padding: .75rem; font-size: 1rem; }
+    button { border: 0; border-radius: 6px; padding: .75rem 1rem; background: #147d92; color: #fff; font-weight: 600; cursor: pointer; }
+    button:hover { background: #0e6374; }
+    ul { list-style: none; padding: 0; margin: 0; }
+    li { border-top: 1px solid #e5ebee; padding: .8rem 0; }
+    #message { min-height: 1.5rem; color: #a33a32; }
+  </style>
+</head>
+<body>
+  <main>
+    <section>
+      <h1>People</h1>
+      <form id="name-form">
+        <input id="name" name="name" type="text" placeholder="Enter a name" required>
+        <button type="submit">Add name</button>
+      </form>
+      <p id="message" role="status"></p>
+      <ul id="names"></ul>
+    </section>
+  </main>
+  <script>
+    const form = document.querySelector('#name-form');
+    const input = document.querySelector('#name');
+    const list = document.querySelector('#names');
+    const message = document.querySelector('#message');
+
+    async function loadNames() {
+      const response = await fetch('/names');
+      const names = await response.json();
+      if (!response.ok) throw new Error(names.error || 'Unable to load names');
+      list.replaceChildren(...names.map((person) => {
+        const item = document.createElement('li');
+        item.textContent = person.name;
+        return item;
+      }));
+    }
+
+    form.addEventListener('submit', async (event) => {
+      event.preventDefault();
+      message.textContent = '';
+      try {
+        const response = await fetch('/names', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ name: input.value })
+        });
+        const result = await response.json();
+        if (!response.ok) throw new Error(result.error || 'Unable to save name');
+        input.value = '';
+        await loadNames();
+      } catch (error) {
+        message.textContent = error.message;
+      }
+    });
+
+    loadNames().catch((error) => { message.textContent = error.message; });
+  </script>
+</body>
+</html>
