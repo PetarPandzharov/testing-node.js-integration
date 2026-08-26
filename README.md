@@ -21,6 +21,7 @@ The application exposes:
 - `GET /` - basic application response
 - `GET /health` - HTTP health check
 - `GET /names` - list of sample names
+- `POST /names` - add a name using `{ "name": "Elena" }`
 - `GET /db-health` - MySQL connectivity check
 
 The server listens on port `3000` by default.

@@ -35,6 +35,17 @@ app.get('/names', (req, res) => {
   res.json(names);
 });
 
+app.post('/names', (req, res) => {
+  const name = typeof req.body.name === 'string' ? req.body.name.trim() : '';
+
+  if (!name) {
+    return res.status(400).json({ error: 'A non-empty name is required' });
+  }
+
+  names.push(name);
+  res.status(201).json({ name });
+});
+
 app.get('/db-health', async (req, res) => {
   try {
     const [rows] = await pool.query('SELECT 1 AS connected');
