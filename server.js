@@ -24,6 +24,10 @@ const pool = mysql.createPool({
 
 app.use(express.json());
 app.use(express.static(path.join(__dirname, 'public')));
+app.use(['/names', '/db-health'], (req, res, next) => {
+  res.set('Cache-Control', 'no-store');
+  next();
+});
 
 app.get('/', (req, res) => {
   res.sendFile(path.join(__dirname, 'public', 'index.html'));
